@@ -41,8 +41,19 @@ public class MainActivity extends AppCompatActivity implements Serializable{
         final LoginButton loginButton = (LoginButton) findViewById(R.id.login_button);
         final TextView hello_user = (TextView) findViewById(R.id.hello_user);
         final Button displayStats = (Button) findViewById(R.id.display_button);
+        final TextView or_view = (TextView) findViewById(R.id.or);
 
         loginButton.setReadPermissions(Arrays.asList(EMAIL));
+
+        if (AccessToken.getCurrentAccessToken() != null) {
+            if (!AccessToken.getCurrentAccessToken().isExpired()) {
+                Profile profile = Profile.getCurrentProfile();
+                hello_user.setVisibility(View.VISIBLE);
+                hello_user.setText(getString(R.string.greeting) + profile.getFirstName() + ", you have two options: ");
+                or_view.setVisibility(View.VISIBLE);
+                displayStats.setVisibility(View.VISIBLE);
+            }
+        }
 
         callbackManager = CallbackManager.Factory.create();
 
@@ -52,7 +63,8 @@ public class MainActivity extends AppCompatActivity implements Serializable{
             public void onSuccess(LoginResult loginResult) {
                 Profile profile = Profile.getCurrentProfile();
                 hello_user.setVisibility(View.VISIBLE);
-                hello_user.setText(getString(R.string.greeting) + profile.getFirstName());
+                hello_user.setText(getString(R.string.greeting) + profile.getFirstName() + ", you have two options: ");
+                or_view.setVisibility(View.VISIBLE);
                 displayStats.setVisibility(View.VISIBLE);
             }
 
@@ -83,12 +95,14 @@ public class MainActivity extends AppCompatActivity implements Serializable{
         };
         accessTokenTracker.startTracking();
     }
-    // Currently not working
+
     public void updateText() {
         runOnUiThread(new Runnable() {
             public void run() {
                 TextView txtView = (TextView) findViewById(R.id.hello_user);
                 txtView.setVisibility(View.INVISIBLE);
+                TextView orView = (TextView) findViewById(R.id.or);
+                orView.setVisibility(View.INVISIBLE);
                 txtView.setText(getString(R.string.greeting));
                 Button button_disp = (Button) findViewById(R.id.display_button);
                 button_disp.setVisibility(View.INVISIBLE);
