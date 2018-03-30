@@ -67,6 +67,7 @@
                     android:textColor="@color/colorOffWhite"
                     android:textAlignment="center"
                     android:text="Hello "
+                    android:fontFamily="@font/exo_thinitalic"
                     android:visibility="invisible"/>
 
                 <Button

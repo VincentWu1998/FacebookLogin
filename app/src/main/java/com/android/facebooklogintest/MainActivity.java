@@ -9,6 +9,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.facebook.AccessToken;
+import com.facebook.AccessTokenTracker;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
@@ -20,12 +21,13 @@ import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 import static android.provider.ContactsContract.Intents.Insert.EMAIL;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements Serializable{
 
     private CallbackManager callbackManager;
 
@@ -43,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
         loginButton.setReadPermissions(Arrays.asList(EMAIL));
 
         callbackManager = CallbackManager.Factory.create();
+
         // Callback registration
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
@@ -68,22 +71,28 @@ public class MainActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         callbackManager.onActivityResult(requestCode, resultCode, data);
-        updateText();
+
+        AccessTokenTracker accessTokenTracker = new AccessTokenTracker() {
+            @Override
+            protected void onCurrentAccessTokenChanged(AccessToken oldAccessToken,
+                                                       AccessToken currentAccessToken) {
+                if (currentAccessToken == null) {
+                    updateText();
+                }
+            }
+        };
+        accessTokenTracker.startTracking();
     }
     // Currently not working
     public void updateText() {
-
-            runOnUiThread(new Runnable() {
-                public void run() {
-                    if (AccessToken.getCurrentAccessToken() == null) {
-                        TextView txtView = (TextView) findViewById(R.id.hello_user);
-                        txtView.setVisibility(View.INVISIBLE);
-                        txtView.setText(getString(R.string.greeting));
-                        Button button_disp = (Button) findViewById(R.id.display_button);
-                        button_disp.setVisibility(View.INVISIBLE);
-                    }
-                }
-            });
-
+        runOnUiThread(new Runnable() {
+            public void run() {
+                TextView txtView = (TextView) findViewById(R.id.hello_user);
+                txtView.setVisibility(View.INVISIBLE);
+                txtView.setText(getString(R.string.greeting));
+                Button button_disp = (Button) findViewById(R.id.display_button);
+                button_disp.setVisibility(View.INVISIBLE);
+            }
+        });
     }
 }
