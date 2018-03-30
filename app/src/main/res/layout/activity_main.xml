@@ -68,7 +68,8 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     xmlns:facebook="http://schemas.android.com/apk/res-auto"
-                    facebook:com_facebook_login_text="Facebook Login"/>
+                    facebook:com_facebook_login_text="Facebook Login"
+                    facebook:com_facebook_logout_text="Log Out"/>
 
                 <TextView
                     android:id="@+id/or"
@@ -86,9 +87,11 @@
                     android:id="@+id/display_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@color/colorOffWhite"
+                    android:background="@color/com_facebook_button_login_background_color"
                     android:layout_gravity="center"
-                    android:text="Display Stats"
+                    android:textColor="@color/colorWhite"
+                    android:text=" Display Your Stats "
+                    android:fontFamily="@font/exo_semibolditalic"
                     android:visibility="invisible"/>
 
             </LinearLayout>

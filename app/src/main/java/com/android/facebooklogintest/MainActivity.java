@@ -6,8 +6,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import com.facebook.AccessToken;
 import com.facebook.AccessTokenTracker;
 import com.facebook.CallbackManager;
@@ -55,6 +53,17 @@ public class MainActivity extends AppCompatActivity implements Serializable{
             }
         }
 
+        AccessTokenTracker accessTokenTracker = new AccessTokenTracker() {
+            @Override
+            protected void onCurrentAccessTokenChanged(AccessToken oldAccessToken,
+                                                       AccessToken currentAccessToken) {
+                if (currentAccessToken == null) {
+                    updateText();
+                }
+            }
+        };
+        accessTokenTracker.startTracking();
+
         callbackManager = CallbackManager.Factory.create();
 
         // Callback registration
@@ -66,6 +75,13 @@ public class MainActivity extends AppCompatActivity implements Serializable{
                 hello_user.setText(getString(R.string.greeting) + profile.getFirstName() + ", you have two options: ");
                 or_view.setVisibility(View.VISIBLE);
                 displayStats.setVisibility(View.VISIBLE);
+
+                displayStats.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+
+                    }
+                });
             }
 
             @Override
