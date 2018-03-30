@@ -29,7 +29,6 @@ public class MainActivity extends AppCompatActivity {
 
     private CallbackManager callbackManager;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
         callbackManager.onActivityResult(requestCode, resultCode, data);
         updateText();
     }
-
+    // Currently not working
     public void updateText() {
 
             runOnUiThread(new Runnable() {
