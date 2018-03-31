@@ -3,6 +3,7 @@ package com.android.facebooklogintest;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -12,12 +13,17 @@ import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
 import com.facebook.Profile;
+import com.facebook.ProfileTracker;
 import com.facebook.appevents.AppEventsLogger;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -28,6 +34,9 @@ import static android.provider.ContactsContract.Intents.Insert.EMAIL;
 public class MainActivity extends AppCompatActivity implements Serializable{
 
     private CallbackManager callbackManager;
+    private ProfileTracker profileTracker;
+    private AccessTokenTracker accessTokenTracker;
+    public static My_Profile curr_usr;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,17 +50,46 @@ public class MainActivity extends AppCompatActivity implements Serializable{
         final Button displayStats = (Button) findViewById(R.id.display_button);
         final TextView or_view = (TextView) findViewById(R.id.or);
 
-        loginButton.setReadPermissions(Arrays.asList(EMAIL));
+        callbackManager = CallbackManager.Factory.create();
+        profileTracker = new ProfileTracker() {
+            @Override
+            protected void onCurrentProfileChanged(Profile profile, Profile profile1) {
 
-        if (AccessToken.getCurrentAccessToken() != null) {
-            if (!AccessToken.getCurrentAccessToken().isExpired()) {
-                Profile profile = Profile.getCurrentProfile();
-                hello_user.setVisibility(View.VISIBLE);
-                hello_user.setText(getString(R.string.greeting) + profile.getFirstName() + ", you have two options: ");
-                or_view.setVisibility(View.VISIBLE);
-                displayStats.setVisibility(View.VISIBLE);
             }
+        };
+        profileTracker.startTracking();
+        accessTokenTracker = new AccessTokenTracker() {
+            @Override
+            protected void onCurrentAccessTokenChanged(
+                    AccessToken oldAccessToken,
+                    AccessToken currentAccessToken) {
+                if (currentAccessToken == null){
+                    updateText();
+                }
+            }
+        };
+
+        loginButton.setReadPermissions(Arrays.asList("email", "user_birthday", "user_friends"));
+
+        // User already has a valid access token? Then take the user to the main activity
+        if (AccessToken.getCurrentAccessToken() != null) {
+            curr_usr = new My_Profile(Profile.getCurrentProfile());
+            hello_user.setVisibility(View.VISIBLE);
+            hello_user.setText(getString(R.string.greeting) + curr_usr.getUser().getFirstName()
+                    + ", you have two options: ");
+            or_view.setVisibility(View.VISIBLE);
+            displayStats.setVisibility(View.VISIBLE);
+
+            displayStats.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent switch_intent = new Intent(MainActivity.this,
+                            StatsDisplay.class);
+                    startActivity(switch_intent);
+                }
+            });
         }
+
 
         AccessTokenTracker accessTokenTracker = new AccessTokenTracker() {
             @Override
@@ -64,22 +102,26 @@ public class MainActivity extends AppCompatActivity implements Serializable{
         };
         accessTokenTracker.startTracking();
 
-        callbackManager = CallbackManager.Factory.create();
+
 
         // Callback registration
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
-                Profile profile = Profile.getCurrentProfile();
+                setFacebookData(loginResult);
+                curr_usr = new My_Profile(Profile.getCurrentProfile());
                 hello_user.setVisibility(View.VISIBLE);
-                hello_user.setText(getString(R.string.greeting) + profile.getFirstName() + ", you have two options: ");
+                hello_user.setText(getString(R.string.greeting) + curr_usr.getUser().getFirstName()
+                        + ", you have two options: ");
                 or_view.setVisibility(View.VISIBLE);
                 displayStats.setVisibility(View.VISIBLE);
 
                 displayStats.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-
+                        Intent switch_intent = new Intent(MainActivity.this,
+                                StatsDisplay.class);
+                        startActivity(switch_intent);
                     }
                 });
             }
@@ -124,5 +166,37 @@ public class MainActivity extends AppCompatActivity implements Serializable{
                 button_disp.setVisibility(View.INVISIBLE);
             }
         });
+    }
+
+    private void setFacebookData(final LoginResult loginResult)
+    {
+        GraphRequest request = GraphRequest.newMeRequest(
+                loginResult.getAccessToken(),
+                new GraphRequest.GraphJSONObjectCallback() {
+                    @Override
+                    public void onCompleted(JSONObject object, GraphResponse response) {
+                        // Application code
+                        try {
+                            Log.i("Response",response.toString());
+
+                            String email = response.getJSONObject().getString("email");
+                            String birthday = response.getJSONObject().getString("user_birthday");
+                            String friends = response.getJSONObject().getString("user_friends");
+
+                            curr_usr = new My_Profile(Profile.getCurrentProfile());
+                            Log.i("Login" + "Email", email);
+                            Log.i("Login"+ "Birthday", birthday);
+                            Log.i("Login" + "Friends", friends);
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+        /*
+        Bundle parameters = new Bundle();
+        parameters.putString("fields", "id,email,first_name,last_name,gender");
+        request.setParameters(parameters);
+        request.executeAsync();*/
     }
 }

@@ -3,4 +3,7 @@
     <string name="greeting">"Hello "</string>
     <string name="facebook_app_id">101778027339871</string>
     <string name="fb_login_protocol_scheme">fb101778027339871</string>
+    <string name="age_birthday_description0">"You are "</string>
+    <string name="age_birthday_description1">" years old and you are born on: "</string>
+    <string name="unknown_age">"You refuse to share your age or birthday."</string>
 </resources>
