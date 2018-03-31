@@ -135,7 +135,8 @@ public class MainActivity extends AppCompatActivity implements Serializable{
                 new GraphRequest.GraphJSONObjectCallback() {
                     @Override
                     public void onCompleted(JSONObject object, GraphResponse response) {
-                        // Application code
+
+                        System.out.println("Attempting to get the user info");
                         try {
                             String email = response.getJSONObject().getString("email");
                             String birthday = response.getJSONObject().getString("user_birthday");
@@ -166,7 +167,9 @@ public class MainActivity extends AppCompatActivity implements Serializable{
     public void loginSuccessGUIUpdate (Profile currentProfile, TextView hello_user, TextView or_view, Button displayStats) {
         // Perform GUI update when login success
         curr_usr = new My_Profile(currentProfile);
-        profileTracker.stopTracking();
+
+        if (profileTracker != null)
+            profileTracker.stopTracking();
         hello_user.setVisibility(View.VISIBLE);
         hello_user.setText(getString(R.string.greeting) + curr_usr.getUser().getFirstName()
                 + ", you have two options: ");
