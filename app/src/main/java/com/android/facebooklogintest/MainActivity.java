@@ -56,69 +56,34 @@ public class MainActivity extends AppCompatActivity implements Serializable{
         final TextView or_view = (TextView) findViewById(R.id.or);
 
         callbackManager = CallbackManager.Factory.create();
-        accessTokenTracker = new AccessTokenTracker() {
-            @Override
-            protected void onCurrentAccessTokenChanged(
-                    AccessToken oldAccessToken,
-                    AccessToken currentAccessToken) {
-                if (currentAccessToken == null){
-                    updateText();
-                }
-            }
-        };
 
         loginButton.setReadPermissions(Arrays.asList("email", "user_birthday", "user_friends"));
         System.out.println("Read Permissions set!");
-
-        // User already has a valid access token? Then take the user to the main activity
-        if (AccessToken.getCurrentAccessToken() != null) {
-            curr_usr = new My_Profile(Profile.getCurrentProfile());
-            hello_user.setVisibility(View.VISIBLE);
-            hello_user.setText(getString(R.string.greeting) + curr_usr.getUser().getFirstName()
-                    + ", you have two options: ");
-            or_view.setVisibility(View.VISIBLE);
-            displayStats.setVisibility(View.VISIBLE);
-
-            displayStats.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Intent switch_intent = new Intent(MainActivity.this,
-                            StatsDisplay.class);
-                    startActivity(switch_intent);
-                }
-            });
-        }
-        AccessTokenTracker accessTokenTracker = new AccessTokenTracker() {
-            @Override
-            protected void onCurrentAccessTokenChanged(AccessToken oldAccessToken,
-                                                       AccessToken currentAccessToken) {
-                if (currentAccessToken == null) {
-                    updateText();
-                }
-            }
-        };
-        accessTokenTracker.startTracking();
 
         // Callback registration
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
                 setFacebookData(loginResult);
-                curr_usr = new My_Profile(Profile.getCurrentProfile());
-                hello_user.setVisibility(View.VISIBLE);
-                hello_user.setText(getString(R.string.greeting) + curr_usr.getUser().getFirstName()
-                        + ", you have two options: ");
-                or_view.setVisibility(View.VISIBLE);
-                displayStats.setVisibility(View.VISIBLE);
 
-                displayStats.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        Intent switch_intent = new Intent(MainActivity.this,
-                                StatsDisplay.class);
-                        startActivity(switch_intent);
-                    }
-                });
+                //Retrieve new Profile
+                if(Profile.getCurrentProfile() == null) {
+                    System.out.println("New profile in use.");
+                    profileTracker = new ProfileTracker() {
+                        @Override
+                        protected void onCurrentProfileChanged(Profile oldProfile, Profile currentProfile) {
+                            System.out.println("Profile has changed");
+                            // Perform GUI update when login success
+                            loginSuccessGUIUpdate(currentProfile, hello_user, or_view, displayStats);
+                        }
+                    };
+                }
+                else {
+                    System.out.println("Old profile still in use.");
+                    Profile profile = Profile.getCurrentProfile();
+                    // Perform GUI update when login success
+                    loginSuccessGUIUpdate(profile, hello_user, or_view, displayStats);
+                }
             }
 
             @Override
@@ -163,8 +128,8 @@ public class MainActivity extends AppCompatActivity implements Serializable{
         });
     }
 
-    private void setFacebookData(final LoginResult loginResult)
-    {
+    private void setFacebookData(final LoginResult loginResult) {
+        System.out.println("Requesting graph");
         GraphRequest request = GraphRequest.newMeRequest(
                 loginResult.getAccessToken(),
                 new GraphRequest.GraphJSONObjectCallback() {
@@ -172,7 +137,6 @@ public class MainActivity extends AppCompatActivity implements Serializable{
                     public void onCompleted(JSONObject object, GraphResponse response) {
                         // Application code
                         try {
-
                             String email = response.getJSONObject().getString("email");
                             String birthday = response.getJSONObject().getString("user_birthday");
                             String friends = response.getJSONObject().getString("user_friends");
@@ -197,5 +161,25 @@ public class MainActivity extends AppCompatActivity implements Serializable{
                 LoginManager.getInstance().logOut();
             }
         }).executeAsync();
+    }
+
+    public void loginSuccessGUIUpdate (Profile currentProfile, TextView hello_user, TextView or_view, Button displayStats) {
+        // Perform GUI update when login success
+        curr_usr = new My_Profile(currentProfile);
+        profileTracker.stopTracking();
+        hello_user.setVisibility(View.VISIBLE);
+        hello_user.setText(getString(R.string.greeting) + curr_usr.getUser().getFirstName()
+                + ", you have two options: ");
+        or_view.setVisibility(View.VISIBLE);
+        displayStats.setVisibility(View.VISIBLE);
+
+        displayStats.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent switch_intent = new Intent(MainActivity.this,
+                        StatsDisplay.class);
+                startActivity(switch_intent);
+            }
+        });
     }
 }
