@@ -3,7 +3,6 @@ package com.android.facebooklogintest;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -15,6 +14,7 @@ import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
+import com.facebook.HttpMethod;
 import com.facebook.Profile;
 import com.facebook.ProfileTracker;
 import com.facebook.appevents.AppEventsLogger;
@@ -43,7 +43,12 @@ public class MainActivity extends AppCompatActivity implements Serializable{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Our app should log out by default
+        disconnectFromFacebook();
+        LoginManager.getInstance().logOut();
+
         final boolean loggedIn = AccessToken.getCurrentAccessToken() == null;
+        System.out.println("We are not logged in, this is: " + loggedIn);
 
         final LoginButton loginButton = (LoginButton) findViewById(R.id.login_button);
         final TextView hello_user = (TextView) findViewById(R.id.hello_user);
@@ -51,13 +56,6 @@ public class MainActivity extends AppCompatActivity implements Serializable{
         final TextView or_view = (TextView) findViewById(R.id.or);
 
         callbackManager = CallbackManager.Factory.create();
-        profileTracker = new ProfileTracker() {
-            @Override
-            protected void onCurrentProfileChanged(Profile profile, Profile profile1) {
-
-            }
-        };
-        profileTracker.startTracking();
         accessTokenTracker = new AccessTokenTracker() {
             @Override
             protected void onCurrentAccessTokenChanged(
@@ -70,6 +68,7 @@ public class MainActivity extends AppCompatActivity implements Serializable{
         };
 
         loginButton.setReadPermissions(Arrays.asList("email", "user_birthday", "user_friends"));
+        System.out.println("Read Permissions set!");
 
         // User already has a valid access token? Then take the user to the main activity
         if (AccessToken.getCurrentAccessToken() != null) {
@@ -89,8 +88,6 @@ public class MainActivity extends AppCompatActivity implements Serializable{
                 }
             });
         }
-
-
         AccessTokenTracker accessTokenTracker = new AccessTokenTracker() {
             @Override
             protected void onCurrentAccessTokenChanged(AccessToken oldAccessToken,
@@ -101,8 +98,6 @@ public class MainActivity extends AppCompatActivity implements Serializable{
             }
         };
         accessTokenTracker.startTracking();
-
-
 
         // Callback registration
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
@@ -177,26 +172,30 @@ public class MainActivity extends AppCompatActivity implements Serializable{
                     public void onCompleted(JSONObject object, GraphResponse response) {
                         // Application code
                         try {
-                            Log.i("Response",response.toString());
 
                             String email = response.getJSONObject().getString("email");
                             String birthday = response.getJSONObject().getString("user_birthday");
                             String friends = response.getJSONObject().getString("user_friends");
 
                             curr_usr = new My_Profile(Profile.getCurrentProfile());
-                            Log.i("Login" + "Email", email);
-                            Log.i("Login"+ "Birthday", birthday);
-                            Log.i("Login" + "Friends", friends);
+                            System.out.println("Email: " + email);
+                            System.out.println("Birthday: " + birthday);
+                            System.out.println("Friends: " + friends);
 
                         } catch (JSONException e) {
-                            e.printStackTrace();
+                            System.out.println(e.getMessage());
                         }
                     }
                 });
-        /*
-        Bundle parameters = new Bundle();
-        parameters.putString("fields", "id,email,first_name,last_name,gender");
-        request.setParameters(parameters);
-        request.executeAsync();*/
+    }
+
+    public void disconnectFromFacebook() {
+        new GraphRequest(AccessToken.getCurrentAccessToken(), "/me/permissions/", null, HttpMethod.DELETE, new GraphRequest
+                .Callback() {
+            @Override
+            public void onCompleted(GraphResponse graphResponse) {
+                LoginManager.getInstance().logOut();
+            }
+        }).executeAsync();
     }
 }
