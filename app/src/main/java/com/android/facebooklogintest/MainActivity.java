@@ -18,6 +18,7 @@ import com.facebook.HttpMethod;
 import com.facebook.Profile;
 import com.facebook.ProfileTracker;
 import com.facebook.appevents.AppEventsLogger;
+import com.facebook.login.LoginBehavior;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
@@ -27,9 +28,6 @@ import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.Arrays;
-
-import static android.provider.ContactsContract.Intents.Insert.EMAIL;
-
 
 public class MainActivity extends AppCompatActivity implements Serializable{
 
@@ -54,6 +52,9 @@ public class MainActivity extends AppCompatActivity implements Serializable{
         final TextView hello_user = (TextView) findViewById(R.id.hello_user);
         final Button displayStats = (Button) findViewById(R.id.display_button);
         final TextView or_view = (TextView) findViewById(R.id.or);
+
+        // Using manual log in, allows for other users to log in
+        loginButton.setLoginBehavior(LoginBehavior.WEB_VIEW_ONLY);
 
         callbackManager = CallbackManager.Factory.create();
 
@@ -92,7 +93,7 @@ public class MainActivity extends AppCompatActivity implements Serializable{
 
             @Override
             public void onError(FacebookException exception) {
-                System.out.println(exception.getMessage());
+
             }
         });
     }
@@ -148,7 +149,9 @@ public class MainActivity extends AppCompatActivity implements Serializable{
                             System.out.println("Friends: " + friends);
 
                         } catch (JSONException e) {
-                            System.out.println(e.getMessage());
+                            System.out.println("Exception is: " + e.getMessage());
+                            System.out.println("Printing stack trace...");
+                            e.printStackTrace();
                         }
                     }
                 });

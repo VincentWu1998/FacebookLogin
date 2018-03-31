@@ -105,5 +105,15 @@
             android:layout_width="1dp"
             android:layout_height="0dp"
             android:layout_weight="1.7"></Space>
+
+        <TextView
+            android:id="@+id/reassurance"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/exo_thinitalic"
+            android:textSize="14dp"
+            android:layout_gravity="center_horizontal"
+            android:textColor="@color/colorOffWhite"
+            android:text="*This app will log you out automatically for your privacy when it is closed." />
     </LinearLayout>
 </RelativeLayout>
