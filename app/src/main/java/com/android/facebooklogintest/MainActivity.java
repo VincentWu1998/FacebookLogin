@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements Serializable{
 
         callbackManager = CallbackManager.Factory.create();
 
-        loginButton.setReadPermissions(Arrays.asList("email", "user_birthday", "user_friends"));
+        loginButton.setReadPermissions(Arrays.asList("email", "user_friends"));
         System.out.println("Read Permissions set!");
 
         // Callback registration
@@ -139,13 +139,14 @@ public class MainActivity extends AppCompatActivity implements Serializable{
 
                         System.out.println("Attempting to get the user info");
                         try {
+                            System.out.println("response is: " + response);
                             String email = response.getJSONObject().getString("email");
-                            String birthday = response.getJSONObject().getString("user_birthday");
+                            //String birthday = response.getJSONObject().getString("user_birthday");
                             String friends = response.getJSONObject().getString("user_friends");
 
                             curr_usr = new My_Profile(Profile.getCurrentProfile());
                             System.out.println("Email: " + email);
-                            System.out.println("Birthday: " + birthday);
+                            //System.out.println("Birthday: " + birthday);
                             System.out.println("Friends: " + friends);
 
                         } catch (JSONException e) {
@@ -155,6 +156,10 @@ public class MainActivity extends AppCompatActivity implements Serializable{
                         }
                     }
                 });
+        Bundle parameters = new Bundle();
+        parameters.putString("fields", "email, user_friends");
+        request.setParameters(parameters);
+        request.executeAsync();
     }
 
     public void disconnectFromFacebook() {
