@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity implements Serializable{
     private ProfileTracker profileTracker;
     private AccessTokenTracker accessTokenTracker;
     public static My_Profile curr_usr;
+    private String curr_usr_email;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements Serializable{
 
         callbackManager = CallbackManager.Factory.create();
 
-        loginButton.setReadPermissions(Arrays.asList("email", "user_friends"));
+        loginButton.setReadPermissions(Arrays.asList("email"));
         System.out.println("Read Permissions set!");
 
         // Callback registration
@@ -139,15 +140,13 @@ public class MainActivity extends AppCompatActivity implements Serializable{
 
                         System.out.println("Attempting to get the user info");
                         try {
-                            System.out.println("response is: " + response);
                             String email = response.getJSONObject().getString("email");
-                            //String birthday = response.getJSONObject().getString("user_birthday");
-                            String friends = response.getJSONObject().getString("user_friends");
-
                             curr_usr = new My_Profile(Profile.getCurrentProfile());
+                            curr_usr.setEmail(email);
                             System.out.println("Email: " + email);
+                            curr_usr_email = email;
                             //System.out.println("Birthday: " + birthday);
-                            System.out.println("Friends: " + friends);
+                            //System.out.println("Friends: " + friends);
 
                         } catch (JSONException e) {
                             System.out.println("Exception is: " + e.getMessage());
@@ -157,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements Serializable{
                     }
                 });
         Bundle parameters = new Bundle();
-        parameters.putString("fields", "email, user_friends");
+        parameters.putString("fields", "email");
         request.setParameters(parameters);
         request.executeAsync();
     }
@@ -174,11 +173,16 @@ public class MainActivity extends AppCompatActivity implements Serializable{
 
     public void loginSuccessGUIUpdate (Profile currentProfile, TextView hello_user, TextView or_view, Button displayStats) {
         // Perform GUI update when login success
-        curr_usr = new My_Profile(currentProfile);
+        System.out.println(currentProfile);
+        if (curr_usr == null)
+            System.out.println("Setting new profile!");
+            curr_usr = new My_Profile(currentProfile);
 
         if (profileTracker != null)
             profileTracker.stopTracking();
         hello_user.setVisibility(View.VISIBLE);
+        System.out.println("curr_usr is: " + curr_usr.getUser());
+        System.out.println("curr_usr.getUser() is: " + curr_usr.getUser());
         hello_user.setText(getString(R.string.greeting) + curr_usr.getUser().getFirstName()
                 + ", you have two options: ");
         or_view.setVisibility(View.VISIBLE);
@@ -189,6 +193,10 @@ public class MainActivity extends AppCompatActivity implements Serializable{
             public void onClick(View view) {
                 Intent switch_intent = new Intent(MainActivity.this,
                         StatsDisplay.class);
+                if (curr_usr.getEmail() == null) {
+                    curr_usr.setEmail(curr_usr_email);
+                }
+                switch_intent.putExtra("user_email", curr_usr.getEmail());
                 startActivity(switch_intent);
             }
         });

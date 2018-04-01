@@ -9,8 +9,13 @@ import com.facebook.Profile;
 public class My_Profile {
 
     private Profile user;
+    private String email;
 
     public My_Profile(Profile user) {
+        this.user = user;
+    }
+
+    public void setUser(Profile user) {
         this.user = user;
     }
 
@@ -18,8 +23,11 @@ public class My_Profile {
         return this.user;
     }
 
-    // In the case where we have to change users manually?
-    public void setUser(Profile user) {
-        this.user = user;
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getEmail() {
+        return this.email;
     }
 }
